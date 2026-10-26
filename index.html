@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zulu Time</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f7f5f0;
+      --text: #1a1917;
+      --sub: #7a7672;
+      --transition-duration: 2s;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'EB Garamond', Georgia, serif;
+      transition:
+        background-color var(--transition-duration) ease,
+        color var(--transition-duration) ease;
+      overflow: hidden;
+    }
+
+    body.day {
+      --bg: #f7f5f0;
+      --text: #1a1917;
+      --sub: #7a7672;
+    }
+
+    /* Kept for future use */
+    body.night {
+      --bg: #0f0e0d;
+      --text: #e8e4dc;
+      --sub: #5a5652;
+    }
+
+    /* Subtle grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .clock-wrap {
+      position: absolute;
+      top: 40%;
+      left: 30%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.08em;
+      opacity: 0;
+      animation: fadeIn 1.2s ease forwards;
+      animation-delay: 0.3s;
+    }
+
+    .time-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.3em;
+    }
+
+    .time {
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      color: var(--text);
+      transition: color var(--transition-duration) ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .date {
+      font-size: clamp(1.1rem, 2.5vw, 2rem);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.04em;
+      color: var(--sub);
+      transition: color var(--transition-duration) ease;
+      padding-left: 0.1em;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Seconds bar */
+    .seconds-bar-track {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      z-index: 10;
+      background: transparent;
+    }
+
+    .seconds-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #4CB7E1;
+      transition: background-color var(--transition-duration) ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="clock-wrap">
+    <div class="time-row">
+      <div class="time" id="zulu-time">--:--</div>
+    </div>
+
+    <div class="date" id="zulu-date">--</div>
+  </div>
+
+  <div class="seconds-bar-track">
+    <div class="seconds-bar-fill" id="seconds-bar"></div>
+  </div>
+
+  <script>
+    const MONTHS = [
+      'Jan','Feb','Mar','Apr','May','Jun',
+      'Jul','Aug','Sep','Oct','Nov','Dec'
+    ];
+
+    function pad(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function formatDate(d) {
+      const day = pad(d.getUTCDate());
+      const mon = MONTHS[d.getUTCMonth()];
+      const yr  = String(d.getUTCFullYear()).slice(-2);
+      return `${day}${mon}${yr}`;
+    }
+
+    function tick() {
+      const now = new Date();
+
+      const h = now.getUTCHours();
+      const m = now.getUTCMinutes();
+      const s = now.getUTCSeconds();
+
+      document.title = `${pad(h)}:${pad(m)} z`;
+
+      document.getElementById('zulu-time').textContent =
+        `${pad(h)}:${pad(m)}`;
+
+      document.getElementById('zulu-date').textContent =
+        formatDate(now);
+
+      document.getElementById('seconds-bar').style.width =
+        `${(s / 59) * 100}%`;
+    }
+
+    tick();
+    setInterval(tick, 1000);
+
+    // Force permanent day mode
+    document.body.classList.add('day');
+  </script>
+
+</body>
+</html>
